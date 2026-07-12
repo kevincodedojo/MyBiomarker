@@ -2,7 +2,7 @@
 
 > **Status:** Draft v1 · July 2026
 > **Design:** [Figma — ashen_MyBiomarker](https://www.figma.com/design/vlJCAGOeesee9sMzZd3XGc/ashen_MyBiomarker)
-> **Goal:** A polished, deployed portfolio project demonstrating frontend engineering skill (React/TypeScript, data visualization, responsive design, accessibility) with a real backend, shipped before December 2026 graduation.
+> **Goal:** A polished, deployed web app for personal biomarker tracking — built with care for data visualization, responsive design, and accessibility, and shipped on a two-week timeline.
 
 ---
 
@@ -154,7 +154,7 @@ health_score  = round(100 × mean(all marker_scores))
 Category label thresholds: **Good** ≥ 0.75 · **Fair** 0.50–0.74 · **Needs work** < 0.50.
 Markers never logged are excluded (score reflects only what the user tracks). Show "x/y optimal" as count of optimal latest readings over tracked markers in that category.
 
-*Keep this deterministic and unit-tested — it's the kind of pure-function logic interviewers ask about.*
+*Keep this deterministic and unit-tested — pure-function logic that's easy to verify and reason about.*
 
 ### 4.3 Trend / delta
 - Detail-view delta: `(latest − previous) / previous`, arrow colored by whether the change moves **toward** the optimal range (green) or away (red) — not simply up/down.
@@ -195,7 +195,7 @@ biomarker, value, value_2 (optional), unit (optional), date, lab (optional), not
 
 ### 6.1 Decision: one full-stack app, not microservices
 
-A solo portfolio project should be **one Next.js application** — frontend, API routes, and DB access in a single deployable. Splitting backend/frontend into separate services adds CORS, auth-token plumbing, two deploys, and two repos of overhead while demonstrating nothing extra to a frontend hiring manager. The "services" are **logical modules** inside one app:
+A solo project at this scale should be **one Next.js application** — frontend, API routes, and DB access in a single deployable. Splitting backend/frontend into separate services adds CORS, auth-token plumbing, two deploys, and two repos of overhead with no benefit at this size. The "services" are **logical modules** inside one app:
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -225,19 +225,19 @@ A solo portfolio project should be **one Next.js application** — frontend, API
 
 | Layer | Choice | Why |
 |---|---|---|
-| Framework | **Next.js 15 (App Router) + TypeScript** | The most-listed stack in junior frontend postings; RSC/data-fetching talking points for interviews |
+| Framework | **Next.js 16 (App Router) + TypeScript** | Industry-standard React stack; server components keep data fetching close to the DB |
 | Styling | **Tailwind CSS** + CSS variables for the design tokens | Fast to match the Figma dark theme; industry-standard |
 | Charts | **Recharts** (or visx if you want to show more depth) | Trend chart + reference band is the visual centerpiece |
 | State/data | **TanStack Query** | Caching, optimistic add-entry, loading/error states done right |
 | Forms | **react-hook-form + zod** | Shared zod schemas validate on client *and* server |
-| DB + Auth | **Supabase** (hosted Postgres, Row-Level Security, email/OAuth auth) | Real relational DB with zero ops; RLS = "users can only read their own health data" is a great security story |
+| DB + Auth | **Supabase** (hosted Postgres, Row-Level Security, email/OAuth auth) | Real relational DB with zero ops; RLS enforces "users can only read their own health data" at the database layer |
 | ORM | Supabase client, or **Drizzle** if you want typed SQL to talk about | |
 | AI | **Claude API**, server-side only | |
 | Hosting | **Vercel** free tier | Push-to-deploy, preview URLs on PRs |
-| Testing | **Vitest + React Testing Library** (units: score, status, CSV parse) + **Playwright** (1–2 happy-path E2E) | Tests are a genuine differentiator on junior resumes |
-| CI | **GitHub Actions**: lint, typecheck, test on every PR | Ditto |
+| Testing | **Vitest + React Testing Library** (units: score, status, CSV parse) + **Playwright** (1–2 happy-path E2E) | Keeps the core logic honest as features stack up |
+| CI | **GitHub Actions**: lint, typecheck, test on every PR | Catches regressions before they deploy |
 
-**Why Postgres over MongoDB/SQLite:** readings are classic relational time-series (user → marker → readings) with a shared catalog and range lookups; SQL aggregation drives the score and trends. Supabase's free tier removes any ops burden, and RLS gives per-user data isolation you can talk about in interviews.
+**Why Postgres over MongoDB/SQLite:** readings are classic relational time-series (user → marker → readings) with a shared catalog and range lookups; SQL aggregation drives the score and trends. Supabase's free tier removes any ops burden, and RLS gives per-user data isolation enforced by the database itself.
 
 ### 6.3 Cross-device strategy
 
@@ -245,7 +245,7 @@ A solo portfolio project should be **one Next.js application** — frontend, API
 
 - The Figma is mobile-first (402×874). Build mobile layout exactly to spec; at `lg:` breakpoint swap bottom tab bar → left sidebar, and let Home/Markers use 2-column grids.
 - Breakpoints: base (mobile ≤640), `md` 768 (tablet), `lg` 1024+ (desktop).
-- **PWA**: manifest + service worker (installable on a phone home screen, app icon, splash). Cache the shell and last-fetched readings for offline read-only viewing. This is the honest answer to "works on computer and phone" with one codebase — and "installable PWA" reads well on a resume.
+- **PWA**: manifest + service worker (installable on a phone home screen, app icon, splash). Cache the shell and last-fetched readings for offline read-only viewing. This is the honest answer to "works on computer and phone" with one codebase.
 - Native app is explicitly **out of scope** for v1.
 
 ### 6.4 Security & privacy (health data!)
@@ -253,7 +253,7 @@ A solo portfolio project should be **one Next.js application** — frontend, API
 - Claude API key, DB service key: server env vars only.
 - HTTPS everywhere (Vercel default). No health values in URLs or analytics events.
 - Account deletion actually deletes readings + insights.
-- Demo mode: a seeded read-only demo account so recruiters can click around without signing up — **make this a login-page button.**
+- Demo mode: a seeded read-only demo account so visitors can explore without signing up — **make this a login-page button.**
 
 ---
 
@@ -263,7 +263,7 @@ A solo portfolio project should be **one Next.js application** — frontend, API
 
 Reasons:
 1. Frontend + API live in one Next.js app — there's nothing to split.
-2. Recruiters spend ~2 minutes; one repo = one README, one commit history, one live-demo link. Multi-repo halves the chance they see the good parts.
+2. One repo = one README, one commit history, one live-demo link — anyone exploring the project sees the whole picture in one place.
 3. One CI pipeline, one issue tracker, atomic PRs that touch UI + API together.
 
 ```
@@ -279,22 +279,30 @@ mybiomarker/
 └── public/                ← PWA manifest, icons
 ```
 
-Workflow that reads well to employers: GitHub Issues for features → short-lived branches → PRs (self-merged is fine) with descriptions → CI green → Vercel preview → merge. Use **GitHub Projects (the board)** on this single repo for your roadmap if you want planning visibility — that's different from creating multiple repos.
+Suggested workflow: GitHub Issues for features → short-lived branches → PRs (self-merged is fine) with descriptions → CI green → Vercel preview → merge. Use **GitHub Projects (the board)** on this single repo for the roadmap if you want planning visibility — that's different from creating multiple repos.
 
 ---
 
-## 8. Milestones (July → December)
+## 8. Timeline (two-week build: July 12–25, 2026)
 
-| Phase | When | Deliverable |
-|---|---|---|
-| **M0 — Setup** | mid-Jul | Repo, Next.js + Tailwind + Supabase wired, CI, deployed "hello" on Vercel, design tokens from Figma |
-| **M1 — Core loop** | Aug | Auth, marker catalog seed, Add entry form, Markers list with status pills, Detail view with chart + ranges + history. **App is demoable.** |
-| **M2 — Dashboard** | early Sep | Home: health score, category cards, quick actions. Score logic unit-tested. |
-| **M3 — AI insights** | late Sep | Insight generation + caching, Insights tab, food/exercise/recipe screens, Ask AI |
-| **M4 — Import & PWA** | Oct | CSV import with preview, PWA install + offline shell, desktop sidebar layout |
-| **M5 — Polish & publish** | early Nov | A11y pass (keyboard, contrast, labels), Lighthouse ≥90s, demo account, README with GIFs, resume/portfolio entry. **Frozen before peak application season.** |
+| Day | Date | Phase | Deliverable |
+|---|---|---|---|
+| 1 | Sat Jul 12 | **M0 ✓** | Scaffold, design tokens, CI, Supabase project, Vercel deploy |
+| 2 | Sun Jul 13 | **M1** | DB schema + RLS policies + seeded marker catalog; email auth with protected routes |
+| 3 | Mon Jul 14 | M1 | Add-entry form: validation, unit auto-fill, BP systolic/diastolic |
+| 4 | Tue Jul 15 | M1 | Markers list: filter chips, status pills, empty state |
+| 5 | Wed Jul 16 | M1 | Detail view: trend chart with optimal band, reference bar, history list |
+| 6 | Thu Jul 17 | M1 | Status-logic unit tests; buffer for anything that slipped. **App is demoable.** |
+| 7 | Fri Jul 18 | **M2** | Health score + category math (unit-tested) |
+| 8 | Sat Jul 19 | M2 | Home dashboard wired to real data |
+| 9 | Sun Jul 20 | **M3** | Claude insight route handler + `insights` cache table |
+| 10 | Mon Jul 21 | M3 | Insights tab with alert/food/exercise cards |
+| 11 | Tue Jul 22 | M3 | Food/recipe/exercise detail screens; Ask AI question box |
+| 12 | Wed Jul 23 | **M4** | CSV import: template, preview table, batch upsert |
+| 13 | Thu Jul 24 | M4 | PWA manifest + offline shell; desktop sidebar layout |
+| 14 | Fri Jul 25 | **M5** | Accessibility pass, Lighthouse ≥ 90, seeded demo account, README screenshots. **Freeze.** |
 
-Scope-cut order if behind (cut from the bottom): Ask AI chat → PWA offline → CSV import → exercise plan screens. Never cut: core loop (M1) + score (M2), one polished AI insight, tests, live demo.
+Scope-cut order if behind (cut from the bottom): Ask AI chat → PWA offline → CSV import → exercise plan screens. Never cut: core loop (M1) + score (M2), one polished AI insight, tests, live demo. Anything cut moves to a post-freeze backlog rather than delaying the two-week ship.
 
 ---
 
@@ -307,8 +315,8 @@ Scope-cut order if behind (cut from the bottom): Ask AI chat → PWA offline →
 - HIPAA compliance (personal project, self-entered data, clear disclaimers)
 
 ## 10. Success Criteria
-- Deployed URL a recruiter can open on phone **or** laptop and explore via demo account in <30s
+- Deployed URL anyone can open on phone **or** laptop and explore via demo account in <30s
 - Matches the Figma design closely on mobile; intentional desktop adaptation
 - Lighthouse: Performance/Accessibility/Best-Practices ≥ 90
 - Meaningful test suite runs in CI (score logic, status classification, CSV validation, 1–2 E2E flows)
-- README that explains architecture decisions in your own words — interviewers *will* ask
+- README that explains the architecture decisions and the reasoning behind them
