@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/*
+ * MyBiomarker design tokens — sampled from the Figma (ashen_MyBiomarker).
+ * Dark olive-green theme with mint accent. The app is dark-only by design.
+ */
+:root {
+  --background: #272c26;
+  --surface: #323831;
+  --surface-raised: #3b423a;
+  --insight: #2d3a32;
+  --edge: #414941;
+
+  --accent: #2ee6a8;
+  --accent-fg: #06281c;
+
+  --optimal: #3ddc97;
+  --optimal-dim: #21382e;
+  --borderline: #e0a83e;
+  --borderline-dim: #3b3323;
+  --high: #f07575;
+  --high-dim: #402b2b;
+
+  --foreground: #f4f6f2;
+  --fg-secondary: #c2c9bf;
+  --fg-muted: #949b90;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-insight: var(--insight);
+  --color-edge: var(--edge);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+
+  --color-optimal: var(--optimal);
+  --color-optimal-dim: var(--optimal-dim);
+  --color-borderline: var(--borderline);
+  --color-borderline-dim: var(--borderline-dim);
+  --color-high: var(--high);
+  --color-high-dim: var(--high-dim);
+
+  --color-foreground: var(--foreground);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
