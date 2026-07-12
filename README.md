@@ -4,7 +4,7 @@ Track your key biomarkers over time — fasting glucose, cholesterol, blood pres
 
 > ⚠️ For informational purposes only — not medical advice.
 
-**Live demo:** _coming soon_ · **Full spec:** [spec.md](spec.md) · **Design:** [Figma](https://www.figma.com/design/vlJCAGOeesee9sMzZd3XGc/ashen_MyBiomarker)
+**Live demo:** [my-biomarker-one.vercel.app](https://my-biomarker-one.vercel.app) · **Full spec:** [spec.md](spec.md) · **Design:** [Figma](https://www.figma.com/design/vlJCAGOeesee9sMzZd3XGc/ashen_MyBiomarker)
 
 ## Stack
 
@@ -30,7 +30,7 @@ npm run dev                  # http://localhost:3000
 ## Roadmap
 
 - [x] **M0** — scaffold, design tokens, CI, deploy
-- [ ] **M1** — auth, marker catalog, log readings, markers list, detail view with trend chart
+- [x] **M1** — auth, marker catalog, log readings, markers list, detail view with trend chart
 - [ ] **M2** — health score + category dashboard
 - [ ] **M3** — AI insights (Claude), food & exercise suggestions
 - [ ] **M4** — CSV import, PWA, desktop layout
