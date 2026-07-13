@@ -1,58 +1,123 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { CATEGORY_ORDER, computeHealth, type CategoryLabel } from "@/lib/score";
+import ScoreRing from "@/components/ScoreRing";
+import type { Category, ReadingWithType } from "@/lib/types";
 
-// Static preview data for M0 — replaced by real readings in M1/M2.
-const categories = [
-  { name: "Metabolic", status: "Good", detail: "4/5 optimal", tone: "text-optimal", dot: "bg-optimal" },
-  { name: "Heart", status: "Fair", detail: "2/3 optimal", tone: "text-borderline", dot: "bg-borderline" },
-  { name: "Glucose", status: "Good", detail: "4/5 optimal", tone: "text-optimal", dot: "bg-optimal" },
-  { name: "Inflammation", status: "Needs work", detail: "1/2 optimal", tone: "text-high", dot: "bg-high" },
-];
+const CATEGORY_NAMES: Record<Category, string> = {
+  metabolic: "Metabolic",
+  heart: "Heart",
+  glucose: "Glucose",
+  inflammation: "Inflammation",
+};
 
-export default function Home() {
+const LABEL_STYLE: Record<CategoryLabel, { text: string; dot: string }> = {
+  Good: { text: "text-optimal", dot: "bg-optimal" },
+  Fair: { text: "text-borderline", dot: "bg-borderline" },
+  "Needs work": { text: "text-high", dot: "bg-high" },
+};
+
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data } = await supabase
+    .from("readings")
+    .select("*, biomarker_types(*)")
+    .order("tested_at", { ascending: false });
+
+  const readings = (data as ReadingWithType[]) ?? [];
+  const health = computeHealth(readings);
+
+  const name = user?.email ? user.email.split("@")[0] : "there";
+  const greeting = name.charAt(0).toUpperCase() + name.slice(1);
+
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h1 className="text-2xl font-bold">Hi, Kevin</h1>
+        <h1 className="text-2xl font-bold">Hi, {greeting}</h1>
         <p className="text-sm text-fg-secondary">Your health overview</p>
       </section>
 
       <section className="flex justify-center py-2" aria-label="Health score">
-        <ScoreRing score={78} />
+        <ScoreRing score={health.score} />
       </section>
 
-      <section aria-labelledby="categories-heading">
-        <h2 id="categories-heading" className="mb-3 text-xs font-semibold tracking-wide text-fg-muted uppercase">
-          Categories
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          {categories.map((c) => (
-            <div key={c.name} className="rounded-xl bg-surface p-4">
-              <p className="flex items-center gap-2 text-sm font-medium">
-                <span className={`size-2 rounded-full ${c.dot}`} aria-hidden />
-                {c.name}
-              </p>
-              <p className={`mt-1 text-lg font-semibold ${c.tone}`}>{c.status}</p>
-              <p className="text-xs text-fg-muted">{c.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {health.score === null ? (
+        <section className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-fg-secondary">
+            Log your first biomarker result to see your health score.
+          </p>
+        </section>
+      ) : (
+        <section aria-labelledby="categories-heading">
+          <h2
+            id="categories-heading"
+            className="mb-3 text-xs font-semibold tracking-wide text-fg-muted uppercase"
+          >
+            Categories
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {CATEGORY_ORDER.map((cat) => {
+              const summary = health.categories[cat];
+              if (!summary) {
+                return (
+                  <div key={cat} className="rounded-xl bg-surface p-4 opacity-60">
+                    <p className="flex items-center gap-2 text-sm font-medium">
+                      <span className="size-2 rounded-full bg-fg-muted" aria-hidden />
+                      {CATEGORY_NAMES[cat]}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-fg-muted">—</p>
+                    <p className="text-xs text-fg-muted">No data yet</p>
+                  </div>
+                );
+              }
+              const style = LABEL_STYLE[summary.label];
+              return (
+                <Link
+                  key={cat}
+                  href="/markers"
+                  className="rounded-xl bg-surface p-4"
+                >
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <span className={`size-2 rounded-full ${style.dot}`} aria-hidden />
+                    {CATEGORY_NAMES[cat]}
+                  </p>
+                  <p className={`mt-1 text-lg font-semibold ${style.text}`}>
+                    {summary.label}
+                  </p>
+                  <p className="text-xs text-fg-muted">
+                    {summary.optimal}/{summary.tracked} optimal
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="insight-heading">
-        <h2 id="insight-heading" className="mb-3 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+        <h2
+          id="insight-heading"
+          className="mb-3 text-xs font-semibold tracking-wide text-fg-muted uppercase"
+        >
           Recent AI insight
         </h2>
         <div className="rounded-xl bg-insight p-4">
           <p className="text-sm font-semibold">Recommendation</p>
           <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
-            Your fasting glucose has improved 8% over 3 months. Keep maintaining
-            your current diet pattern. Tap for more insights.
+            Personalized insights based on your readings arrive in M3.
           </p>
         </div>
       </section>
 
       <section aria-labelledby="actions-heading" className="flex flex-col gap-3">
-        <h2 id="actions-heading" className="text-xs font-semibold tracking-wide text-fg-muted uppercase">
+        <h2
+          id="actions-heading"
+          className="text-xs font-semibold tracking-wide text-fg-muted uppercase"
+        >
           Quick actions
         </h2>
         <Link
@@ -68,38 +133,6 @@ export default function Home() {
           Upload lab report (CSV)
         </Link>
       </section>
-    </div>
-  );
-}
-
-function ScoreRing({ score }: { score: number }) {
-  const r = 56;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative" role="img" aria-label={`Health score ${score} out of 100`}>
-      <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden>
-        <circle cx="75" cy="75" r={r} fill="none" stroke="var(--surface-raised)" strokeWidth="9" />
-        <circle
-          cx="75"
-          cy="75"
-          r={r}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth="9"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - score / 100)}
-          transform="rotate(-90 75 75)"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-bold">{score}</span>
-        <span className="text-xs text-fg-secondary">
-          Health
-          <br />
-          score
-        </span>
-      </div>
     </div>
   );
 }
