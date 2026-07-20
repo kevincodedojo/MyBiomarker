@@ -45,12 +45,18 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <a
+          href="#main"
+          className="sr-only z-20 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        >
+          Skip to content
+        </a>
         <BottomNav />
         <div className="flex flex-1 flex-col lg:pl-60">
           <header className="py-4 text-center text-sm font-semibold text-fg-secondary lg:hidden">
             MyBiomarker
           </header>
-          <main className="mx-auto w-full max-w-md flex-1 px-5 pb-28 lg:max-w-3xl lg:pt-10 lg:pb-10">
+          <main id="main" className="mx-auto w-full max-w-md flex-1 px-5 pb-28 lg:max-w-3xl lg:pt-10 lg:pb-10">
             {children}
           </main>
         </div>

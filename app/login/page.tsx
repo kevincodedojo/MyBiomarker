@@ -12,6 +12,23 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  async function exploreDemo() {
+    setBusy(true);
+    setMessage(null);
+    // Public read-only showcase account — credentials are intentionally public.
+    const { error } = await createClient().auth.signInWithPassword({
+      email: "mybiomarker.demo@gmail.com",
+      password: "demo-mybiomarker-2026",
+    });
+    if (error) {
+      setMessage(error.message);
+      setBusy(false);
+    } else {
+      router.push("/");
+      router.refresh();
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -102,6 +119,21 @@ export default function LoginPage() {
         {mode === "signin"
           ? "New here? Create an account"
           : "Already have an account? Sign in"}
+      </button>
+
+      <div className="flex items-center gap-3 text-xs text-fg-muted" aria-hidden>
+        <span className="h-px flex-1 bg-edge" />
+        or
+        <span className="h-px flex-1 bg-edge" />
+      </div>
+
+      <button
+        type="button"
+        onClick={exploreDemo}
+        disabled={busy}
+        className="rounded-xl bg-surface-raised py-3.5 text-sm font-semibold disabled:opacity-60"
+      >
+        Explore the demo (no sign-up)
       </button>
 
       <p className="text-center text-xs text-fg-muted">

@@ -19,7 +19,7 @@
   --borderline: #e0a83e;
   --borderline-dim: #3b3323;
   --high: #f07575;
-  --high-dim: #402b2b;
+  --high-dim: #351f1f; /* dark enough for 4.5:1 AA contrast under --high text */
 
   --foreground: #f4f6f2;
   --fg-secondary: #c2c9bf;
@@ -55,4 +55,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Visible keyboard-focus indicator everywhere (unlayered, so it wins over
+   utility outline resets). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
