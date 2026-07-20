@@ -32,6 +32,6 @@ npm run dev                  # http://localhost:3000
 - [x] **M0** — scaffold, design tokens, CI, deploy
 - [x] **M1** — auth, marker catalog, log readings, markers list, detail view with trend chart
 - [x] **M2** — health score + category dashboard
-- [ ] **M3** — AI insights (Claude), food & exercise suggestions
+- [x] **M3** — AI insights (Claude), food & exercise suggestions
 - [ ] **M4** — CSV import, PWA, desktop layout
 - [ ] **M5** — accessibility pass, demo account, polish

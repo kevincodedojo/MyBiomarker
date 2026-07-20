@@ -47,6 +47,29 @@ create policy "users manage own readings"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- ============ AI insights cache (M3) ============
+-- One row per (user, scope) for cached generations; scope 'ask' rows accumulate
+-- as Q&A history. data_hash ties a cached insight to the readings that produced
+-- it — when readings change, the app regenerates and replaces the row.
+
+create table if not exists public.insights (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  scope      text not null,        -- 'bundle' | 'marker:<slug>' | 'ask'
+  content    jsonb not null,
+  data_hash  text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists insights_user_scope on public.insights (user_id, scope, created_at desc);
+
+alter table public.insights enable row level security;
+drop policy if exists "users manage own insights" on public.insights;
+create policy "users manage own insights"
+  on public.insights for all to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- ============ Seed: marker catalog ============
 -- Reference ranges follow ADA (glucose/HbA1c), AHA/ACC (lipids, blood pressure),
 -- and AHA/CDC (hs-CRP) published guidance. "Low" glucose is flagged red (hypoglycemia risk).

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedBundle } from "@/lib/ai/insights";
 import { CATEGORY_ORDER, computeHealth, type CategoryLabel } from "@/lib/score";
 import ScoreRing from "@/components/ScoreRing";
 import type { Category, ReadingWithType } from "@/lib/types";
@@ -30,6 +31,9 @@ export default async function Home() {
 
   const readings = (data as ReadingWithType[]) ?? [];
   const health = computeHealth(readings);
+  // Read-only cache lookup — Home never blocks on AI generation; the
+  // Insights tab is where fresh bundles get generated.
+  const bundle = user ? await getCachedBundle(supabase, user.id, readings) : null;
 
   const name = user?.email ? user.email.split("@")[0] : "there";
   const greeting = name.charAt(0).toUpperCase() + name.slice(1);
@@ -105,12 +109,16 @@ export default async function Home() {
         >
           Recent AI insight
         </h2>
-        <div className="rounded-xl bg-insight p-4">
-          <p className="text-sm font-semibold">Recommendation</p>
-          <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
-            Personalized insights based on your readings arrive in M3.
+        <Link href="/insights" className="block rounded-xl bg-insight p-4">
+          <p className="text-sm font-semibold">
+            {bundle ? bundle.overview.headline : "Recommendation"}
           </p>
-        </div>
+          <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
+            {bundle
+              ? `${bundle.overview.body} Tap for more insights.`
+              : "Visit the Insights tab to generate personalized recommendations from your readings."}
+          </p>
+        </Link>
       </section>
 
       <section aria-labelledby="actions-heading" className="flex flex-col gap-3">

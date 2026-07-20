@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMarkerInsight } from "@/lib/ai/insights";
 import MarkerDetail from "@/components/MarkerDetail";
-import type { BiomarkerType, Reading } from "@/lib/types";
+import type { BiomarkerType, Reading, ReadingWithType } from "@/lib/types";
 
 export default async function MarkerDetailPage({
   params,
@@ -26,6 +27,17 @@ export default async function MarkerDetailPage({
     .eq("biomarker_id", type.id)
     .order("tested_at", { ascending: true });
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const withType = ((readings as Reading[]) ?? []).map(
+    (r) => ({ ...r, biomarker_types: type }) as ReadingWithType,
+  );
+  const insight =
+    user && withType.length > 0
+      ? await getMarkerInsight(supabase, user.id, type as BiomarkerType, withType)
+      : null;
+
   return (
     <div className="flex flex-col gap-5">
       <Link
@@ -37,6 +49,7 @@ export default async function MarkerDetailPage({
       <MarkerDetail
         type={type as BiomarkerType}
         readings={(readings as Reading[]) ?? []}
+        insight={insight}
       />
     </div>
   );

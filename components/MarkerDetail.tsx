@@ -12,6 +12,7 @@ import {
   Tooltip,
 } from "recharts";
 import { classify, delta, formatValue, readingStatus } from "@/lib/status";
+import type { MarkerInsight } from "@/lib/ai/schemas";
 import type { BiomarkerType, Reading, Status } from "@/lib/types";
 
 const RANGES = [
@@ -37,9 +38,11 @@ const STATUS_TEXT: Record<Status, string> = {
 export default function MarkerDetail({
   type,
   readings, // ascending by tested_at
+  insight = null,
 }: {
   type: BiomarkerType;
   readings: Reading[];
+  insight?: MarkerInsight | null;
 }) {
   const [range, setRange] = useState<(typeof RANGES)[number]>(RANGES[1]); // 3M
 
@@ -208,9 +211,20 @@ export default function MarkerDetail({
 
       <section className="rounded-xl bg-insight p-4">
         <p className="text-sm font-semibold">AI insight</p>
-        <p className="mt-2 text-sm text-fg-secondary">
-          Personalized trend analysis arrives in M3.
-        </p>
+        {insight ? (
+          <>
+            <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
+              {insight.trend_summary} {insight.recommendation}
+            </p>
+            <p className="mt-2 text-xs text-fg-muted">
+              Suggested retest: {insight.retest_window}
+            </p>
+          </>
+        ) : (
+          <p className="mt-2 text-sm text-fg-secondary">
+            Trend analysis appears here once generated.
+          </p>
+        )}
       </section>
 
       <section aria-labelledby="history-heading">
