@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -169,7 +170,12 @@ export default function AddPage() {
         >
           {isSubmitting ? "Saving…" : "Save result"}
         </button>
-        <p className="text-center text-xs text-fg-muted">CSV upload arrives in M4.</p>
+        <Link
+          href="/add/import"
+          className="rounded-xl bg-surface-raised py-3.5 text-center text-sm font-semibold"
+        >
+          Upload CSV instead
+        </Link>
       </form>
     </div>
   );

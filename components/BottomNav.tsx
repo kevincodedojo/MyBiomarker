@@ -11,37 +11,77 @@ const tabs = [
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
 
+// Renders both navigation surfaces: a bottom tab bar on mobile and a left
+// sidebar on desktop (lg+). Only one is visible at a time via breakpoints.
 export default function BottomNav() {
   const pathname = usePathname();
 
   if (pathname === "/login") return null;
 
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <nav
-      aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 border-t border-edge bg-background/95 backdrop-blur"
-    >
-      <ul className="mx-auto flex max-w-md items-stretch justify-between px-6 pb-[env(safe-area-inset-bottom)]">
-        {tabs.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-1 px-2 py-3 text-xs ${
-                  active ? "text-accent" : "text-fg-muted hover:text-fg-secondary"
-                }`}
-              >
-                <Icon />
-                {label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <>
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-edge bg-background/95 backdrop-blur lg:hidden"
+      >
+        <ul className="mx-auto flex max-w-md items-stretch justify-between px-6 pb-[env(safe-area-inset-bottom)]">
+          {tabs.map(({ href, label, icon: Icon }) => {
+            const active = isActive(href);
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex flex-col items-center gap-1 px-2 py-3 text-xs ${
+                    active ? "text-accent" : "text-fg-muted hover:text-fg-secondary"
+                  }`}
+                >
+                  <Icon />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <nav
+        aria-label="Primary"
+        className="fixed inset-y-0 left-0 z-10 hidden w-60 flex-col border-r border-edge bg-background px-4 py-6 lg:flex"
+      >
+        <p className="flex items-center gap-2 px-3 pb-8 text-base font-bold">
+          <span aria-hidden className="size-2.5 rounded-full bg-accent" />
+          MyBiomarker
+        </p>
+        <ul className="flex flex-col gap-1">
+          {tabs.map(({ href, label, icon: Icon }) => {
+            const active = isActive(href);
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+                    active
+                      ? "bg-surface text-accent"
+                      : "text-fg-secondary hover:bg-surface/60 hover:text-foreground"
+                  }`}
+                >
+                  <Icon />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-auto px-3 text-xs text-fg-muted">
+          Not medical advice.
+        </p>
+      </nav>
+    </>
   );
 }
 

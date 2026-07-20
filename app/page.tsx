@@ -63,7 +63,7 @@ export default async function Home() {
           >
             Categories
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {CATEGORY_ORDER.map((cat) => {
               const summary = health.categories[cat];
               if (!summary) {
@@ -135,7 +135,7 @@ export default async function Home() {
           + Log new biomarker result
         </Link>
         <Link
-          href="/add"
+          href="/add/import"
           className="rounded-xl bg-surface-raised py-3.5 text-center text-sm font-semibold"
         >
           Upload lab report (CSV)
